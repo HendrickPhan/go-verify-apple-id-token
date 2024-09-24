@@ -36,7 +36,8 @@ type IdTokenResponse struct {
 	Aud            string `json:"aud"`
 	C_hash         string `mapstructure:"c_hash" json:"c_hash"`
 	Email          string `json:"email"`
-	EmailVerified  string `mapstructure:"email_verified" json:"email_verified"`
+	EmailVerified  bool   `mapstructure:"email_verified" json:"email_verified"`
+	IsPrivateEmail bool   `mapstructure:"is_private_email" json:"is_private_email"`
 	AuthTime       int64  `mapstructure:"auth_time" json:"auth_time"`
 	Exp            int64  `json:"exp"`
 	Iat            int64  `json:"iat"`
@@ -62,8 +63,16 @@ func New() *Client {
 }
 
 func (c *Client) VerifyIdToken(clientId, idToken string) (*IdTokenResponse, error) {
+
+	if idToken == "" {
+		return nil, errors.New("idToken is Empty")
+	}
+	if clientId == "" {
+		return nil, errors.New("clientId is Empty")
+	}
+
 	jwtClaims := IdTokenResponse{}
-	tokenClaims, err := jwt.ParseWithClaims(idToken, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+	tokenClaims, _ := jwt.ParseWithClaims(idToken, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
 		//log.Println(t.Header["kid"].(string))
 		//log.Println(t.Header["alg"].(string))
 		kid := t.Header["kid"].(string)
@@ -71,7 +80,7 @@ func (c *Client) VerifyIdToken(clientId, idToken string) (*IdTokenResponse, erro
 		return c.GetApplePublicKeyObject(kid, alg), nil
 	})
 
-	err = mapstructure.Decode(tokenClaims.Claims, &jwtClaims)
+	err := mapstructure.Decode(tokenClaims.Claims, &jwtClaims)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,15 +88,15 @@ func (c *Client) VerifyIdToken(clientId, idToken string) (*IdTokenResponse, erro
 	// log.Printf("%t\n%#v", tokenClaims.Valid, tokenClaims.Claims)
 
 	if jwtClaims.Iss != APPLE_BASE_URL {
-		return nil, fmt.Errorf("The iss does not match the Apple URL - iss: %s | expected: %s", jwtClaims.Iss, APPLE_BASE_URL)
+		return nil, fmt.Errorf("the iss does not match the Apple URL - iss: %s | expected: %s", jwtClaims.Iss, APPLE_BASE_URL)
 	}
 	if jwtClaims.Aud != clientId {
-		return nil, fmt.Errorf("The aud parameter does not include this client - is: %s | expected: %s", jwtClaims.Aud, clientId)
+		return nil, fmt.Errorf("the aud parameter does not include this client - is: %s | expected: %s", jwtClaims.Aud, clientId)
 	}
 
 	expTime := time.UnixMilli(jwtClaims.Exp)
 	if time.Now().Before(expTime) {
-		return nil, errors.New("exp is earlier than the current time.")
+		return nil, errors.New("exp is earlier than the current time")
 	}
 
 	return &jwtClaims, nil
