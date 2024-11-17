@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"net/http"
 	"time"
@@ -77,8 +76,6 @@ func (c *Client) VerifyIdToken(clientId, idToken string) (*IdTokenResponse, erro
 		idToken,
 		&jwt.MapClaims{},
 		func(t *jwt.Token) (interface{}, error) {
-			// log.Println(t.Header["kid"].(string))
-			// log.Println(t.Header["alg"].(string))
 			kid := t.Header["kid"].(string)
 			alg := t.Header["alg"].(string)
 			return c.GetApplePublicKeyObject(kid, alg), nil
@@ -87,10 +84,8 @@ func (c *Client) VerifyIdToken(clientId, idToken string) (*IdTokenResponse, erro
 
 	err := mapstructure.Decode(tokenClaims.Claims, &jwtClaims)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
-	// log.Printf("%t\n%#v", tokenClaims.Valid, tokenClaims.Claims)
 
 	if jwtClaims.Iss != APPLE_BASE_URL {
 		return nil, fmt.Errorf(
@@ -174,7 +169,6 @@ func (c *Client) getApplePublicKeys() ([]AppleKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(req.URL)
 	// perform request
 	resp, err = c.httpCli.Do(req)
 	if err != nil {
