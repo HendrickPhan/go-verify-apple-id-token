@@ -27,5 +27,26 @@ go get github.com/HendrickPhan/go-verify-apple-id-token
 ```
 
 ## Usage
-Check main.go for example usage
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/HendrickPhan/go-verify-apple-id-token/validator"
+)
+
+var idToken = "your_id_token_here"
+
+func main() {
+	client := validator.NewClient()
+
+	jwtClaims, err := client.VerifyIdToken("com.example.app", idToken)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(jwtClaims.Email)
+	}
+}
+```
 
