@@ -1,4 +1,4 @@
-module github.com/coolishbee/go-verify-apple-id-token
+module github.com/HendrickPhan/go-verify-apple-id-token
 
 go 1.19
 

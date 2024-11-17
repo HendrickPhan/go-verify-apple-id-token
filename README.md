@@ -23,26 +23,9 @@ This repository is inspired by [verify-apple-id-token](https://github.com/stefan
 
 # Installation
 ```
-go get github.com/coolishbee/go-verify-apple-id-token
+go get github.com/HendrickPhan/go-verify-apple-id-token
 ```
 
 ## Usage
+Check main.go for example usage
 
-```go
-import(
-    "github.com/coolishbee/go-verify-apple-id-token"
-)
-
-var idToken = ""
-
-func main() {
-	client := apple.New()
-
-	jwtClaims, err := client.VerifyIdToken("clientId", idToken)
-	if err != nil {
-        fmt.Println(err)
-	} else {
-		fmt.Println(jwtClaims.Email)
-	}
-}
-```
